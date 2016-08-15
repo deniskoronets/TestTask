@@ -37,7 +37,7 @@ use Yii;
  * @property AsClients $parent
  * @property AsClients[] $asClients
  */
-class AsClients extends \yii\db\ActiveRecord
+class AsClient extends \yii\db\ActiveRecord
 {
     /**
      * @inheritdoc

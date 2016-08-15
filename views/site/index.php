@@ -1,5 +1,7 @@
 <?php
 
+use yii\helpers\Url;
+
 /* @var $this yii\web\View */
 
 $this->title = 'My Yii Application';
@@ -7,47 +9,47 @@ $this->title = 'My Yii Application';
 <div class="site-index">
 
     <div class="jumbotron">
-        <h1>Congratulations!</h1>
+        <h1>Yii2 Authentication task</h1>
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
+       	<p>Authentication based on different roles:</p>
 
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
+        <a href='<?= Url::to(['admin/login']) ?>' class='btn btn-success'>Login admin</a>
+        <a href='<?= Url::to(['sales/login']) ?>' class='btn btn-success'>Login sales</a>
+        <a href='<?= Url::to(['site/login', 'pid' => 'RVM1G5621DGYHI']) ?>' class='btn btn-success'>Login with pid</a>
+        <a href='<?= Url::to(['site/login']) ?>' class='btn btn-success'>Login</a>
 
-    <div class="body-content">
+        <hr>
 
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
+        <p>Access restriction test:</p>
+        <a href='<?= Url::to(['admin/index']) ?>' class='btn btn-success'>Only admin</a>
+        <a href='<?= Url::to(['sales/index']) ?>' class='btn btn-success'>Only sales + admins</a>
+        <a href='<?= Url::to(['site/all-roles']) ?>' class='btn btn-success'>All roles</a>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+        <hr>
 
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
+        <pre class='text-left'>
+Need to implement complex multipoint authentication for web application.
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+Two tables should be used: ‘users’ and ‘as_users’.
+Only users with ‘user_type_id’ = 6 from ‘users’ should be used. Users from this table gather role GSM Admin.
+For users from ‘as_users’ roles described in ‘as_user_types’ table.
 
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
+There are 3 entry points for different roles:
+1.	/admin/login
+2.	/sales/login
+3.	/site/login/pid/”hash” (where hash is client specific hash from corresponding table, like - site/login/pid/RVM1G5621DGYHI)
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+Restrictions by roles:
+1.	Only GSM Admins are allowed to login
+2.	GSM Admins, Sales Users/Admins, Sales Users/Admins are allowed to login.
+3.	All user roles are allowed, but Client Admins are allowed to login only using own client hash (as_clients->hash).
+	Any Client Admin has relation to Client table by ‘clientId’ field.
 
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
-        </div>
+Find in authDB.sql SQL dump for task.
+Feel free to use any encrypt password mechanism you prefer. You don’t need to use current password values.
 
+For implementation use PHP 5.x
+No any framework restrictions.
+		</pre>
     </div>
 </div>

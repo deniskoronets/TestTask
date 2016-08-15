@@ -2,77 +2,74 @@
 
 namespace app\models;
 
-class User extends \yii\base\Object implements \yii\web\IdentityInterface
+use Yii;
+use app\contracts\AuthenticableModel;
+
+/**
+ * This is the model class for table "users".
+ *
+ * @property integer $user_id
+ * @property integer $client_id
+ * @property integer $user_type_id
+ * @property string $user_email
+ * @property string $user_password
+ * @property string $user_first_name
+ * @property string $user_last_name
+ * @property string $user_phone
+ * @property integer $user_status_flag
+ * @property integer $user_screen_lock_flag
+ */
+class User extends \yii\db\ActiveRecord implements AuthenticableModel
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
     /**
      * @inheritdoc
      */
-    public static function findIdentity($id)
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'users';
     }
 
     /**
      * @inheritdoc
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
-     */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
+        return [
+            [['client_id', 'user_type_id', 'user_status_flag', 'user_screen_lock_flag'], 'integer'],
+            [['user_email', 'user_first_name', 'user_last_name', 'user_phone'], 'string', 'max' => 80],
+            [['user_password'], 'string', 'max' => 64],
+        ];
     }
 
     /**
      * @inheritdoc
      */
-    public function getId()
+    public function attributeLabels()
     {
-        return $this->id;
+        return [
+            'user_id' => 'User ID',
+            'client_id' => 'Client ID',
+            'user_type_id' => 'User Type ID',
+            'user_email' => 'User Email',
+            'user_password' => 'User Password',
+            'user_first_name' => 'User First Name',
+            'user_last_name' => 'User Last Name',
+            'user_phone' => 'User Phone',
+            'user_status_flag' => 'User Status Flag',
+            'user_screen_lock_flag' => 'User Screen Lock Flag',
+        ];
+    }
+
+    /**
+     * Find user by email
+     * @param string $email
+     */
+    public static function findByEmail($email)
+    {
+    	return self::find()->where([
+    		'user_email' => $email,
+    		'user_type_id' => 6
+		])->one();
     }
 
     /**
@@ -80,25 +77,39 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function getAuthKey()
     {
-        return $this->authKey;
+    	return $this->user_id . $this->user_email;
     }
 
     /**
      * @inheritdoc
      */
-    public function validateAuthKey($authKey)
+    public function getRole()
     {
-        return $this->authKey === $authKey;
+    	return Authentication::ROLE_GSM_ADMIN;
     }
 
     /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return boolean if password provided is valid for current user
+     * @inheritdoc
      */
-    public function validatePassword($password)
+    public function getEmail()
     {
-        return $this->password === $password;
+    	return $this->user_email;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+    	return $this->user_id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function checkPassword($password)
+    {
+    	// return $this->user_password === hash('sha256', $password);
+    	return $this->user_password === $password;
     }
 }

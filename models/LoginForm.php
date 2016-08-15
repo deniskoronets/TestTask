@@ -13,11 +13,20 @@ use yii\base\Model;
  */
 class LoginForm extends Model
 {
-    public $username;
+    public $email;
     public $password;
     public $rememberMe = true;
 
     private $_user = false;
+    private $allowedRoles;
+
+    /**
+     * @param array $allowedRoles roles which is allowed to authenticate via this form
+     */
+    public function __construct($allowedRoles = [])
+    {
+    	$this->allowedRoles = $allowedRoles;
+    }
 
 
     /**
@@ -26,8 +35,8 @@ class LoginForm extends Model
     public function rules()
     {
         return [
-            // username and password are both required
-            [['username', 'password'], 'required'],
+            // email and password are both required
+            [['email', 'password'], 'required'],
             // rememberMe must be a boolean value
             ['rememberMe', 'boolean'],
             // password is validated by validatePassword()
@@ -48,13 +57,13 @@ class LoginForm extends Model
             $user = $this->getUser();
 
             if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+                $this->addError($attribute, 'Incorrect email or password.');
             }
         }
     }
 
     /**
-     * Logs in a user using the provided username and password.
+     * Logs in a user using the provided email and password.
      * @return boolean whether the user is logged in successfully
      */
     public function login()
@@ -66,14 +75,28 @@ class LoginForm extends Model
     }
 
     /**
-     * Finds user by [[username]]
+     * Finds user by [[email]]
      *
      * @return User|null
      */
     public function getUser()
     {
         if ($this->_user === false) {
-            $this->_user = User::findByUsername($this->username);
+            $this->_user = Authentication::findByEmail($this->email, $this->allowedRoles);
+
+            $pid = Yii::$app->request->get('pid');
+
+            // Deny authentication for all groups, except Client Admin if `pid` param is not empty
+            if (!empty($pid) && $this->_user && $this->_user->role != 100) {
+            	return null;
+            }
+
+            // Check `pid` for Client Admin user
+            if ($this->_user && $this->_user->role == 100 &&
+            	$this->_user->model->client->hash != $pid
+    		) {
+    			return null;
+            }
         }
 
         return $this->_user;

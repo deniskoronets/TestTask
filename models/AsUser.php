@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use app\contracts\AuthenticableModel;
 
 /**
  * This is the model class for table "as_users".
@@ -21,7 +22,7 @@ use Yii;
  *
  * @property AsUserTypes $userType
  */
-class AsUsers extends \yii\db\ActiveRecord
+class AsUser extends \yii\db\ActiveRecord implements AuthenticableModel
 {
     /**
      * @inheritdoc
@@ -74,6 +75,66 @@ class AsUsers extends \yii\db\ActiveRecord
      */
     public function getUserType()
     {
-        return $this->hasOne(AsUserTypes::className(), ['user_type_id' => 'user_type_id']);
+        return $this->hasOne(AsUserType::className(), ['user_type_id' => 'user_type_id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getClient()
+    {
+        return $this->hasOne(AsClient::className(), ['id' => 'clientId']);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public static function findByEmail($email)
+    {
+    	return self::find()->where([
+    		'email' => $email,
+		])->one();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAuthKey()
+    {
+    	return $this->id . $this->email;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRole()
+    {
+    	return $this->userType->user_type_id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEmail()
+    {
+    	return $this->email;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId()
+    {
+    	return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function checkPassword($password)
+    {
+    	// return $this->pwd === hash('sha256', $password);
+    	return $this->pwd === $password;
     }
 }
