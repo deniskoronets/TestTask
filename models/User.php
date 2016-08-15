@@ -109,7 +109,6 @@ class User extends \yii\db\ActiveRecord implements AuthenticableModel
      */
     public function checkPassword($password)
     {
-    	// return $this->user_password === hash('sha256', $password);
-    	return $this->user_password === $password;
+    	return $this->user_password === hash('sha256', $password);
     }
 }
