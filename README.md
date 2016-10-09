@@ -1,4 +1,4 @@
-Test task
+Multiple models authentication
 ============================
 
 models/Authentication class provides an authentication layer for sub-models. This class implements yii's IdentityInterface, so this solution is based on native yii2 authentication layer.
